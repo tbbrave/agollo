@@ -117,6 +117,7 @@ type ConfigComponent struct {
 
 //Start 启动配置组件定时器
 func (c *ConfigComponent) Start() {
+	fmt.Println("启动配置组件定时器")
 	t2 := time.NewTimer(longPollInterval)
 	//long poll for sync
 	for {
@@ -147,11 +148,16 @@ func syncConfigs(namespace string, isAsync bool) error {
 
 	remoteConfigs, err := notifyRemoteConfig(nil, namespace, isAsync)
 
+	if err != nil || len(remoteConfigs) == 0 {
+		appConfig := env.GetPlainAppConfig()
+		loadBackupConfig(appConfig.NamespaceName, appConfig)
+	}
+
 	if err != nil {
-		return fmt.Errorf("notifySyncConfigServices: %s", err)
+		return log.Errorf("apollo syncConfigs:notifySyncConfigServices: %s", err)
 	}
 	if len(remoteConfigs) == 0 {
-		return fmt.Errorf("notifySyncConfigServices: empty remote config")
+		return log.Errorf("apollo syncConfigs:notifySyncConfigServices: empty remote config")
 	}
 
 	updateAllNotifications(remoteConfigs)
@@ -187,7 +193,7 @@ func toApolloConfig(resBody []byte) ([]*apolloNotify, error) {
 	err := json.Unmarshal(resBody, &remoteConfig)
 
 	if err != nil {
-		log.Error("Unmarshal Msg Fail,Error:", err)
+		log.Error("apollo: Unmarshal Msg Fail,Error:", err)
 		return nil, err
 	}
 	return remoteConfig, nil

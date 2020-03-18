@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -246,6 +247,7 @@ func UpdateApolloConfigCache(configurations map[string]string, expireTime int, n
 		// update new
 		// keys
 		for key, value := range configurations {
+			fmt.Println(key, value)
 			//key state insert or update
 			//insert
 			if !mp[key] {
